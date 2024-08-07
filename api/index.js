@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 8001;
 connectDb();
 
 // Middleware setup
-
+const __dirname = path.resolve();
 app.use(express.json());
 app.use(cookieParser());
 
