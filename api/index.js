@@ -5,8 +5,10 @@ import userRouter from "./routes/userRouter.js";
 import authRouter from "./routes/authRoute.js";
 import listingRouter from "./routes/listingRoute.js";
 import { connectDb } from "./config/dbConfig.js";
-
+import dotenv from "dotenv";
+dotenv.config();
 const app = express();
+
 const PORT = process.env.PORT || 8001;
 
 // Database connection
