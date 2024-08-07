@@ -5,7 +5,6 @@ import userRouter from "./routes/userRouter.js";
 import authRouter from "./routes/authRoute.js";
 import listingRouter from "./routes/listingRoute.js";
 import { connectDb } from "./config/dbConfig.js";
-import cors from "cors";
 import morgan from "morgan";
 
 const app = express();
@@ -15,7 +14,7 @@ const PORT = process.env.PORT || 8001;
 connectDb();
 
 // Middleware setup
-app.use(cors());
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("tiny"));
