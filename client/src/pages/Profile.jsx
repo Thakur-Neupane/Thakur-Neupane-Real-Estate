@@ -18,9 +18,6 @@ import {
 } from "../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
 export const Profile = () => {
   const fileRef = useRef(null);
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -32,6 +29,12 @@ export const Profile = () => {
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState([]);
   const dispatch = useDispatch();
+
+  // firebase storage
+  // allow read;
+  // allow write: if
+  // request.resource.size < 2 * 1024 * 1024 &&
+  // request.resource.contentType.matches('image/.*')
 
   useEffect(() => {
     if (file) {
@@ -54,13 +57,11 @@ export const Profile = () => {
       },
       (error) => {
         setFileUploadError(true);
-        toast.error("Error uploading image. Image must be less than 2 MB.");
       },
       () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          setFormData({ ...formData, avatar: downloadURL });
-          toast.success("Image successfully uploaded!");
-        });
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
+          setFormData({ ...formData, avatar: downloadURL })
+        );
       }
     );
   };
@@ -83,58 +84,45 @@ export const Profile = () => {
       const data = await res.json();
       if (data.success === false) {
         dispatch(updateUserFailure(data.message));
-        toast.error(`Update failed: ${data.message}`);
         return;
       }
 
       dispatch(updateUserSuccess(data));
       setUpdateSuccess(true);
-      toast.success("User updated successfully!");
     } catch (error) {
       dispatch(updateUserFailure(error.message));
-      toast.error(`Update failed: ${error.message}`);
     }
   };
 
   const handleDeleteUser = async () => {
-    if (window.confirm("Are you sure you want to delete your account?")) {
-      try {
-        dispatch(deleteUserStart());
-        const res = await fetch(`/api/user/delete/${currentUser._id}`, {
-          method: "DELETE",
-        });
-        const data = await res.json();
-        if (data.success === false) {
-          dispatch(deleteUserFailure(data.message));
-          toast.error(`Deletion failed: ${data.message}`);
-          return;
-        }
-        dispatch(deleteUserSuccess(data));
-        toast.success("Account deleted successfully!");
-      } catch (error) {
-        dispatch(deleteUserFailure(error.message));
-        toast.error(`Deletion failed: ${error.message}`);
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
       }
+      dispatch(deleteUserSuccess(data));
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
     }
   };
 
   const handleSignOut = async () => {
-    if (window.confirm("Are you sure you want to sign out?")) {
-      try {
-        dispatch(signOutUserStart());
-        const res = await fetch("/api/auth/signout");
-        const data = await res.json();
-        if (data.success === false) {
-          dispatch(deleteUserFailure(data.message));
-          toast.error(`Sign out failed: ${data.message}`);
-          return;
-        }
-        dispatch(deleteUserSuccess(data));
-        toast.success("Signed out successfully!");
-      } catch (error) {
-        dispatch(deleteUserFailure(error.message));
-        toast.error(`Sign out failed: ${error.message}`);
+    try {
+      dispatch(signOutUserStart());
+      const res = await fetch("/api/auth/signout");
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
       }
+      dispatch(deleteUserSuccess(data));
+    } catch (error) {
+      dispatch(deleteUserFailure(data.message));
     }
   };
 
@@ -145,47 +133,35 @@ export const Profile = () => {
       const data = await res.json();
       if (data.success === false) {
         setShowListingsError(true);
-        toast.error("Error showing listings.");
         return;
       }
 
-      if (data.length === 0) {
-        toast.info("No listings to show.");
-      } else {
-        setUserListings(data);
-        toast.success("Listings loaded successfully!");
-      }
+      setUserListings(data);
     } catch (error) {
       setShowListingsError(true);
-      toast.error("Error showing listings.");
     }
   };
 
   const handleListingDelete = async (listingId) => {
-    if (window.confirm("Are you sure you want to delete this listing?")) {
-      try {
-        const res = await fetch(`/api/listing/delete/${listingId}`, {
-          method: "DELETE",
-        });
-        const data = await res.json();
-        if (data.success === false) {
-          toast.error(`Error deleting listing: ${data.message}`);
-          return;
-        }
-
-        setUserListings((prev) =>
-          prev.filter((listing) => listing._id !== listingId)
-        );
-        toast.success("Listing deleted successfully!");
-      } catch (error) {
-        toast.error(`Error deleting listing: ${error.message}`);
+    try {
+      const res = await fetch(`/api/listing/delete/${listingId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        console.log(data.message);
+        return;
       }
+
+      setUserListings((prev) =>
+        prev.filter((listing) => listing._id !== listingId)
+      );
+    } catch (error) {
+      console.log(error.message);
     }
   };
-
   return (
     <div className="p-3 max-w-lg mx-auto">
-      <ToastContainer />
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
@@ -273,7 +249,7 @@ export const Profile = () => {
         {showListingsError ? "Error showing listings" : ""}
       </p>
 
-      {userListings.length > 0 ? (
+      {userListings && userListings.length > 0 && (
         <div className="flex flex-col gap-4">
           <h1 className="text-center mt-7 text-2xl font-semibold">
             Your Listings
@@ -291,13 +267,13 @@ export const Profile = () => {
                 />
               </Link>
               <Link
-                className="text-slate-700 font-semibold hover:underline truncate flex-1"
+                className="text-slate-700 font-semibold  hover:underline truncate flex-1"
                 to={`/listing/${listing._id}`}
               >
                 <p>{listing.name}</p>
               </Link>
 
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col item-center">
                 <button
                   onClick={() => handleListingDelete(listing._id)}
                   className="text-red-700 uppercase"
@@ -311,8 +287,6 @@ export const Profile = () => {
             </div>
           ))}
         </div>
-      ) : (
-        <p className="text-center mt-5 text-gray-700">No listings to show</p>
       )}
     </div>
   );
