@@ -4,7 +4,8 @@ import path from "path";
 import userRouter from "./routes/userRouter.js";
 import authRouter from "./routes/authRoute.js";
 import listingRouter from "./routes/listingRoute.js";
-import { connectDb } from "./config/dbConfig.js";
+import mongoose from "mongoose";
+// import { connectDb } from "./config/dbConfig.js";
 import dotenv from "dotenv";
 dotenv.config();
 const app = express();
@@ -12,7 +13,11 @@ const app = express();
 const PORT = process.env.PORT || 8001;
 
 // Database connection
-connectDb();
+
+const conn = await mongoose.connect(process.env.MONGO_URL);
+
+conn && console.log("DB connected");
+// connectDb();
 
 // Middleware setup
 const __dirname = path.resolve();
