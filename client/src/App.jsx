@@ -14,7 +14,7 @@ import { Listing } from "./pages/Listing";
 import { Search } from "./pages/Search";
 import { Footer } from "./components/Footer";
 
-function App() {
+const App = () => {
   return (
     <BrowserRouter>
       <Header />
@@ -38,6 +38,6 @@ function App() {
       <Footer />
     </BrowserRouter>
   );
-}
+};
 
 export default App;
