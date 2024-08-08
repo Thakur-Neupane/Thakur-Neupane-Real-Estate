@@ -19,6 +19,14 @@ const __dirname = path.resolve();
 app.use(express.json());
 app.use(cookieParser());
 
+app.listen(PORT, (error) => {
+  if (error) {
+    console.log("Server Error:", error);
+  } else {
+    console.log(`Server running at http://localhost:${PORT}`);
+  }
+});
+
 // Routes
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
@@ -52,13 +60,4 @@ app.use((error, req, res, next) => {
     status: "error",
     message: error.message,
   });
-});
-
-// Start server
-app.listen(PORT, (error) => {
-  if (error) {
-    console.log("Server Error:", error);
-  } else {
-    console.log(`Server running at http://localhost:${PORT}`);
-  }
 });
